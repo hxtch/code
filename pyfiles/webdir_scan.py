@@ -23,9 +23,6 @@ headers = {
 
 f = open('effienturl2.txt','wb')
 
-class Finished(Exception):
-	print "finished"
-
 def progress_bar():
 	OUTPUT_LOCK.acquire()
 	sys.stdout.write('\r\033[K')
@@ -58,26 +55,24 @@ def send_request(url):
 	COUNT += 1
 	notfoundpagetext = requests.get(url + '/notexitstktdhhhhhh',allow_redirects = False).text
 	if r.status_code == 200 and r.text != notfoundpagetext:
-		print "%d %s\n"%(COUNT, url)
+#		print "%d %s\n"%(COUNT, url)
 		f.write(url)
 		f.write('\n')
 	if (COUNT % (TOTAL / WIDTH) == 0) :	
 		progress_bar()
 
 def main():
-	parser = argparse.ArgumentParser('the web scan start')
+	parser = argparse.ArgumentParser(description = 'the web scan start')
 	parser.add_argument("-u", "--url", type = str)
 	arg = parser.parse_args()
 	url = arg.url
 	urls = open_dict(url)
 	try:
-		pool = Pool(1000) #创建拥有1000个进程数量的进程池
+		pool = Pool(1000) #创建拥有50个进程数量的进程池
 		pool.map_async(send_request, [eurl for eurl in urls])
 		pool.close() #关闭进程池，不再接受新的进程
 		pool.join() #主进程阻塞，等待子进程的退出
 	except KeyboardInterrupt:
-		pool.terminate()
-	except Finished:
 		pool.terminate()
 
 	f.close()
